@@ -48,7 +48,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const startDateEl = document.getElementById('startDate');
   const totalUsersEl = document.getElementById('totalUsers');
   const vaultBalanceEl = document.getElementById('vaultBalance');
-  const savingsReminderEl = document.getElementById("savingsReminder");
   const progressTitleEl = document.getElementById("progressTitle");
   const progressTextEl = document.getElementById("progressText");
   const progressFillEl = document.getElementById("progressFill");
@@ -61,6 +60,22 @@ document.addEventListener("DOMContentLoaded", () => {
     statusDiv.textContent = message;
     statusDiv.classList.add("show");
     setTimeout(() => statusDiv.classList.remove("show"), duration);
+  }
+
+  async function handlePageFlow() {
+    const savedPurpose = localStorage.getItem("savelockPurpose");
+    const savedAmount = localStorage.getItem("savelockTargetAmount");
+    const savedFreq = localStorage.getItem("savelockFrequency");
+
+    if (savedPurpose && savedAmount && savedFreq) {
+      homepageWrapper.style.display = "none";
+      targetSavingsPage.style.display = "none";
+      targetFormPage.style.display = "none";
+      dashboard.style.display = "block";
+    } else {
+      homepageWrapper.style.display = "none";
+      targetSavingsPage.style.display = "block";
+    }
   }
 
   connectBtn.addEventListener("click", async () => {
@@ -100,9 +115,13 @@ document.addEventListener("DOMContentLoaded", () => {
       userAddress = await signer.getAddress();
       contract = new ethers.Contract(contractAddress, abi, signer);
 
-      homepageWrapper.style.display = "none";
-      targetSavingsPage.style.display = "block";
+      const rawUnlockTime = await contract.getUnlockTime();
+      unlockTimestamp = Number(rawUnlockTime);
+      startCountdown();
+      updateProgressBar();
+      await loadUserData();
 
+      handlePageFlow();
     } catch (err) {
       console.error("❌ Wallet connection failed:", err);
       alert("Wallet connection failed: " + (err.message || "Unknown error"));
@@ -148,5 +167,109 @@ document.addEventListener("DOMContentLoaded", () => {
     savingsProgressSection.style.display = "block";
   }
 
-  // Remaining contract interaction functions like startCountdown, loadUserData, depositForm listener, claim button listener remain unchanged.
+  async function loadUserData() {
+    try {
+      const deposits = await contract.getDeposits(userAddress);
+      const total = await contract.getTotalDeposited(userAddress);
+      totalDepositedEl.textContent = `${ethers.utils.formatEther(total)} ETH`;
+
+      historyTableBody.innerHTML = '';
+      deposits.forEach((d, i) => {
+        const isUnlocked = Date.now() / 1000 >= unlockTimestamp;
+        const status = d.claimed ? '✅ Claimed' : (isUnlocked ? '🔓 Claimable' : '🔒 Locked');
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${ethers.utils.formatEther(d.amount)} ETH</td><td>${new Date(Number(d.timestamp) * 1000).toLocaleString()}</td><td>${status}</td>`;
+        historyTableBody.appendChild(row);
+      });
+
+      updateProgressBar(Number(ethers.utils.formatEther(total)));
+
+    } catch (err) {
+      console.error("❌ Error loading deposits:", err);
+    }
+
+    try {
+      const contractStartTime = await contract.getStartTime();
+      startDateEl.textContent = new Date(Number(contractStartTime) * 1000).toLocaleString();
+    } catch { startDateEl.textContent = "N/A"; }
+
+    try {
+      const totalUsers = await contract.getUserCount();
+      totalUsersEl.textContent = totalUsers.toString();
+    } catch { totalUsersEl.textContent = "N/A"; }
+
+    try {
+      const vaultBal = await provider.getBalance(contractAddress);
+      vaultBalanceEl.textContent = `${ethers.utils.formatEther(vaultBal)} ETH`;
+    } catch { vaultBalanceEl.textContent = "N/A"; }
+  }
+
+  function startCountdown() {
+    if (!unlockTimestamp) {
+      timerEl.textContent = "Invalid unlock time.";
+      return;
+    }
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const diff = unlockTimestamp * 1000 - now;
+      if (diff <= 0) {
+        timerEl.textContent = "Unlocked!";
+        clearInterval(interval);
+        depositForm.style.display = "none";
+        depositHeading.textContent = "Savelock Period has Ended";
+        afterUnlockText.style.display = "block";
+        inlineClaimWrapper.style.display = "block";
+      } else {
+        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const m = Math.floor((diff / (1000 * 60)) % 60);
+        const s = Math.floor((diff / 1000) % 60);
+        timerEl.textContent = `${d}d ${h}h ${m}m ${s}s`;
+      }
+    }, 1000);
+  }
+
+  depositForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    if (Date.now() >= unlockTimestamp * 1000) return alert("Savelock period has ended.");
+
+    const amount = parseFloat(depositAmount.value);
+    if (isNaN(amount) || amount <= 0) return alert("Enter valid amount");
+
+    try {
+      showStatus("Depositing...");
+      const tx = await contract.deposit({ value: ethers.utils.parseEther(amount.toString()) });
+      await tx.wait();
+      showStatus("Deposit successful", 3000);
+      depositAmount.value = '';
+      await loadUserData();
+    } catch (err) {
+      console.error("❌ Deposit failed:", err);
+      showStatus("Deposit failed", 3000);
+    }
+  });
+
+  inlineClaimBtn.addEventListener("click", async () => {
+    try {
+      const deposits = await contract.getDeposits(userAddress);
+      let claimedAny = false;
+      for (let i = 0; i < deposits.length; i++) {
+        if (!deposits[i].claimed) {
+          showStatus(`Claiming deposit ${i + 1}...`);
+          const tx = await contract.claim(i);
+          await tx.wait();
+          claimedAny = true;
+        }
+      }
+      if (claimedAny) {
+        showStatus("All eligible deposits claimed", 3000);
+      } else {
+        showStatus("No unclaimed deposits", 3000);
+      }
+      await loadUserData();
+    } catch (err) {
+      console.error("❌ Claim failed:", err);
+      showStatus("Claim failed", 3000);
+    }
+  });
 });
