@@ -1,0 +1,367 @@
+/* ===================
+   Base Styles
+   =================== */
+html {
+  background-color: black;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  margin: 0 auto;
+  height: 100%;
+  width: 100vw;
+  text-align: center;
+  overflow-x: hidden;
+  max-width: 1500px;
+  color: white;
+}
+
+h1, h2, h3, p {
+  margin-bottom: 16px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+}
+
+h1 {
+  font-weight: 700;
+}
+
+/* ===================
+   Navbar
+   =================== */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem 3rem;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  color: white;
+}
+.logo a {
+  color: white;
+  text-decoration: none;
+}
+.logo img {
+  height: 2rem;
+}
+.logo h1 {
+  font-size: 1.5rem;
+  color: white;
+  margin: 0;
+}
+
+/* ===================
+   Homepage
+   =================== */
+.container-active {
+  font-size: 0.95rem;
+  text-align: center;
+  color: white;
+  padding: 0 3rem;
+  margin-top: 5rem;
+}
+.container-active h1 {
+  font-size: 1.4rem;
+  margin-bottom: 2rem;
+}
+#connectBtn {
+  background-color: #007A33;
+  font-size: 1.2rem;
+  color: white;
+  padding: 0.5rem;
+  border: 0.3rem solid #007A33;
+  border-radius: 0.3rem;
+  margin-top: 1rem;
+}
+#connectBtn:hover {
+  background-color: #028d3c;
+  border-color: #028d3c;
+}
+
+/* ===================
+   Buttons
+   =================== */
+button {
+  background-color: #007f3e;
+  color: white;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+  width: 85%;
+  max-width: 300px;
+}
+button:hover {
+  background-color: #006f35;
+}
+
+/* ===================
+   Target Savings Page
+   =================== */
+.savings-goal-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding: 0 1rem;
+}
+.goal-card {
+  background-color: #1a1a1a;
+  padding: 1.2rem;
+  border-radius: 12px;
+  border: 1px solid #333;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+}
+.goal-card h3 {
+  font-size: 1.2rem;
+  color: #d4a055;
+}
+.goal-card p {
+  font-size: 0.9rem;
+  color: #ccc;
+  margin-bottom: 1rem;
+}
+
+/* ===================
+   Dashboard
+   =================== */
+.container {
+  min-height: 100vh;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  margin-top: 1rem;
+}
+.deposit-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  width: 100%;
+}
+.deposit-section {
+  width: 100%;
+  max-width: 350px;
+}
+.right-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 250px;
+  gap: 1.2rem;
+  margin-top: 2rem;
+}
+
+/* Progress Bar */
+.progress-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #d4a055;
+  margin-bottom: 0.5rem;
+}
+.progress-wrapper {
+  width: 85%;
+  max-width: 350px;
+  margin: 0 auto 1.5rem auto;
+}
+.progress-bar {
+  width: 100%;
+  background-color: #333;
+  height: 12px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background-color: #d4a055;
+  width: 0%;
+  transition: width 0.4s ease;
+}
+.progress-text {
+  font-size: 0.85rem;
+  color: #ccc;
+  margin-top: 0.4rem;
+}
+
+/* Frequency Reminder */
+.savings-reminder {
+  font-size: 0.85rem;
+  color: #d4a055;
+  text-align: center;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Balance Box */
+.total-balance-box {
+  background-color: #d4a055;
+  color: #000;
+  border-radius: 16px;
+  padding: 30px 40px;
+  width: 100%;
+  max-width: 220px;
+  min-height: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.8rem;
+  border: 2px solid #d4a055;
+  text-align: center;
+}
+.total-balance-box .label {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #000;
+}
+#totalDeposited {
+  font-size: 2.2rem;
+  font-weight: bold;
+}
+
+/* ===================
+   Forms
+   =================== */
+#depositForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  margin: 20px 0;
+  width: 100%;
+  max-width: 380px;
+}
+input[type="number"] {
+  padding: 14px;
+  border-radius: 12px;
+  border: 2px solid #d4a055;
+  width: 70%;
+  background-color: #0d0d0d;
+  color: #fff;
+  font-size: 1rem;
+}
+input[type="number"]::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+/* === Target Form Page === */
+.target-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 2rem auto;
+  width: 100%;
+  max-width: 400px;
+  padding: 0 1rem;
+}
+.target-form label {
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #d4a055;
+}
+.target-form input,
+.target-form select {
+  padding: 14px;
+  border-radius: 12px;
+  border: 2px solid #d4a055;
+  background-color: #0d0d0d;
+  color: white;
+  font-size: 1rem;
+}
+.target-form select {
+  font-size: 1rem;
+}
+
+
+
+
+
+/* ===================
+   Media Queries
+   =================== */
+@media screen and (min-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  .navbar {
+    padding: 3rem 6rem;
+  }
+
+  .logo img {
+    height: 3rem;
+  }
+
+  .logo h1 {
+    font-size: 2rem;
+  }
+
+  .container-active {
+    font-size: 1.3rem;
+    padding: 0 6rem;
+    margin-top: 4rem;
+  }
+
+  .container-active h1 {
+    font-size: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  #connectBtn {
+    font-size: 1.4rem;
+    padding: 0.8rem 1.5rem;
+    border-width: 0.4rem;
+    border-radius: 0.4rem;
+  }
+
+  .deposit-container {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 80px;
+    text-align: left;
+  }
+
+  .goal-card h3 {
+    font-size: 1.4rem;
+  }
+
+  .goal-card p {
+    font-size: 1rem;
+  }
+
+  .savings-goal-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    padding: 0 2rem;
+  }
+
+  .savings-reminder {
+    text-align: left;
+    padding-left: 6rem;
+  }
+}
