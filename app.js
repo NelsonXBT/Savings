@@ -1,3 +1,20 @@
+
+/* === Frequently Asked Questions === */
+
+document.addEventListener("DOMContentLoaded", () => {
+  const faqItems = document.querySelectorAll('.faq-item');
+
+  faqItems.forEach(item => {
+    const question = item.querySelector('.faq-question');
+    question.addEventListener('click', () => {
+      item.classList.toggle('active');
+    });
+  });
+});
+
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
   console.log("✅ DOM ready");
 
@@ -72,8 +89,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const dashboard = document.getElementById("dashboard");
   const depositForm = document.getElementById("depositForm");
   const depositAmount = document.getElementById("depositAmount");
-  const savingsPurposeSelect = document.getElementById("savingsPurpose");
-
   const historyTableBody = document.querySelector('#historyTable tbody');
   const totalDepositedEl = document.getElementById('totalDeposited');
   const timerEl = document.getElementById('timer');
@@ -85,13 +100,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const totalUsersEl = document.getElementById('totalUsers');
   const vaultBalanceEl = document.getElementById('vaultBalance');
 
-  const purposeProgressTitle = document.getElementById("purposeProgressTitle");
-  const purposeProgressBar = document.getElementById("purposeProgressBar");
-  const currentSavedEl = document.getElementById("currentSaved");
-  const targetAmountEl = document.getElementById("targetAmount");
-
-  const PURPOSE_KEY = "savelock_purpose_data";
-
   function showStatus(message, duration = 5000) {
     const statusDiv = document.getElementById("statusMessage");
     if (!statusDiv) return;
@@ -102,29 +110,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }, duration);
   }
 
-  function updateProgressDisplay(data) {
-    const { purpose, saved, target } = data;
-    purposeProgressTitle.textContent = `${purpose} Savings Progress`;
-    currentSavedEl.textContent = saved.toFixed(4);
-    targetAmountEl.textContent = target.toFixed(4);
-    purposeProgressBar.value = Math.min((saved / target) * 100, 100);
-  }
-
-  function loadPurposeProgress() {
-    const raw = localStorage.getItem(PURPOSE_KEY);
-    if (!raw) return;
-    try {
-      const parsed = JSON.parse(raw);
-      updateProgressDisplay(parsed);
-    } catch (err) {
-      console.error("❌ Failed to load progress:", err);
-    }
-  }
-
   connectBtn.addEventListener("click", async () => {
     try {
       if (!window.ethereum) {
-        alert("Please use a browser with MetaMask or WalletConnect.");
+        alert("Please use a browser with an Ethereum wallet like MetaMask.");
         return;
       }
 
@@ -137,9 +126,26 @@ document.addEventListener("DOMContentLoaded", () => {
             method: "wallet_switchEthereumChain",
             params: [{ chainId: "0x" + chainId.toString(16) }]
           });
-        } catch (err) {
-          alert("Please switch to the Arbitrum Sepolia network.");
+          showStatus("Network changed successfully. Click Connect Wallet now", 5000);
           return;
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            await window.ethereum.request({
+              method: "wallet_addEthereumChain",
+              params: [{
+                chainId: "0x" + chainId.toString(16),
+                chainName: "Arbitrum Sepolia",
+                rpcUrls: [rpcUrl],
+                nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
+                blockExplorerUrls: ["https://sepolia.arbiscan.io"]
+              }]
+            });
+            showStatus("Network added successfully. Click Connect Wallet now", 5000);
+            return;
+          } else {
+            alert("Please switch to the Arbitrum Sepolia network.");
+            return;
+          }
         }
       }
 
@@ -155,14 +161,18 @@ document.addEventListener("DOMContentLoaded", () => {
       unlockTimestamp = Number(rawUnlockTime);
       startCountdown();
       await loadUserData();
-      loadPurposeProgress();
     } catch (err) {
       console.error("❌ Wallet connection failed:", err);
-      alert("Connection failed");
+      alert("Wallet connection failed: " + (err.message || "Unknown error"));
     }
   });
 
   function startCountdown() {
+    if (!unlockTimestamp) {
+      timerEl.textContent = "Invalid unlock time.";
+      return;
+    }
+
     const interval = setInterval(() => {
       const now = Date.now();
       const diff = unlockTimestamp * 1000 - now;
@@ -201,17 +211,29 @@ document.addEventListener("DOMContentLoaded", () => {
           <td>${status}</td>`;
         historyTableBody.appendChild(row);
       });
+    } catch (err) {
+      console.error("❌ Error loading deposits:", err);
+    }
 
+    try {
       const contractStartTime = await contract.getStartTime();
       startDateEl.textContent = new Date(Number(contractStartTime) * 1000).toLocaleString();
+    } catch {
+      startDateEl.textContent = "N/A";
+    }
 
+    try {
       const totalUsers = await contract.getUserCount();
       totalUsersEl.textContent = totalUsers.toString();
+    } catch {
+      totalUsersEl.textContent = "N/A";
+    }
 
+    try {
       const vaultBal = await provider.getBalance(contractAddress);
       vaultBalanceEl.textContent = `${ethers.utils.formatEther(vaultBal)} ETH`;
-    } catch (err) {
-      console.error("❌ Error loading user data:", err);
+    } catch {
+      vaultBalanceEl.textContent = "N/A";
     }
   }
 
@@ -224,15 +246,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const amount = parseFloat(depositAmount.value);
-    const purpose = savingsPurposeSelect.value;
-
-    if (!purpose) {
-      alert("Please select what you're saving for.");
-      return;
-    }
-
     if (isNaN(amount) || amount <= 0) {
-      alert("Enter a valid amount greater than 0.");
+      alert("Please enter a valid amount greater than 0.");
       return;
     }
 
@@ -241,24 +256,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const tx = await contract.deposit({ value: ethers.utils.parseEther(amount.toString()) });
       await tx.wait();
       showStatus("Deposit successful", 3000);
-
-      const savedData = JSON.parse(localStorage.getItem(PURPOSE_KEY)) || {
-        purpose,
-        saved: 0,
-        target: amount * 12 // Assume target is 12 months of this deposit
-      };
-
-      const updated = {
-        purpose,
-        saved: savedData.saved + amount,
-        target: savedData.target
-      };
-
-      localStorage.setItem(PURPOSE_KEY, JSON.stringify(updated));
-      updateProgressDisplay(updated);
-
       depositAmount.value = '';
-      savingsPurposeSelect.value = '';
       await loadUserData();
     } catch (err) {
       console.error("❌ Deposit failed:", err);
@@ -291,14 +289,5 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("❌ Claim failed:", err);
       showStatus("Claim failed", 3000);
     }
-  });
-
-  // FAQ toggle
-  const faqItems = document.querySelectorAll('.faq-item');
-  faqItems.forEach(item => {
-    const question = item.querySelector('.faq-question');
-    question.addEventListener('click', () => {
-      item.classList.toggle('active');
-    });
   });
 });

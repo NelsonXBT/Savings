@@ -10,6 +10,7 @@
   <script defer src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@walletconnect/web3-provider@1.8.0/dist/umd/index.min.js"></script>
   <script defer src="app.js"></script>
+
 </head>
 
 <body>
@@ -24,41 +25,103 @@
     </header>
 
     <!-- Homepage -->
-    <div id="homepageWrapper">
-      <div id="homepage" class="container-active">
-        <h1>Welcome to Savelock</h1>
-        <p>
-          A decentralized, self-custodial crypto vault for time-locked saving.
-          Savelock is a simple, secure, and transparent dApp
-          that helps users save crypto monthly with a yearly time-locked vault mechanism.
-        </p>
-        <button id="connectBtn">Connect Wallet</button>
-      </div>
+     <div id="homepageWrapper">
+    <div id="homepage" class="container-active">
+      <h1>Welcome to Savelock</h1>
+      <p>
+        A decentralized, self-custodial crypto vault for time-locked saving.
+        Savelock is a simple, secure, and transparent dApp
+        that helps users save crypto monthly with a yearly time-locked vault mechanism.
+      </p>
+      <button id="connectBtn">Connect Wallet</button>
+    </div>
 
-      <!-- How it works -->
-      <section id="howItWorks" class="how-it-works-box">
-        <h2>💡 How to Use Savelock</h2>
-        <ol>
-          <li><strong>Connect your wallet</strong> using the "Connect Wallet" button.</li>
-          <li><strong>Deposit ETH</strong> before the lock period ends.</li>
-          <li><strong>Wait 1 for year,</strong> your savings is locked for a year.</li>
-          <li><strong>Withdraw your savings,</strong> after unlock period click the "Claim" button on the dashboard to claim your full savings.</li>
-        </ol>
-      </section>
+    <!-- How it works -->
+    <section id="howItWorks" class="how-it-works-box">
+      <h2>💡 How to Use Savelock</h2>
+      <ol>
+        <li><strong>Connect your wallet</strong> using the "Connect Wallet" button.</li>
+        <li><strong>Deposit ETH</strong> before the lock period ends.</li>
+        <li><strong>Wait 1 for year,</strong> your savings is locked for a year.</li>
+        <li><strong>Withdraw your savings,</strong> after unlock period click the "Claim" button on the dashboard to claim your full savings.</li>
+      </ol>
+    </section>
 
-      <!-- Frequently Asked Questions -->
-      <section id="faqSection" class="faq-container">
+
+
+
+    <!-- Frequently Asked Questions -->
+          <section id="faqSection" class="faq-container">
         <h2>Frequently Asked Questions</h2>
-        <!-- [FAQ items remain unchanged] -->
+
         <div class="faq-item">
           <button class="faq-question">1. What is Savelock? </button>
           <div class="faq-answer">
             <p>Savelock is a crypto savings dApp that helps you lock your funds for a fixed period. Once deposited, your funds cannot be withdrawn until the unlock date. Helping you save without temptation.</p>
           </div>
         </div>
-        <!-- [more FAQs truncated for brevity] -->
+
+        <div class="faq-item">
+          <button class="faq-question">2. What coin can I deposit?</button>
+          <div class="faq-answer">
+            <p>Currently, only ETH on the Arbitrum network is supported, More coins might be added later.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">3. How long is my savings locked?</button>
+          <div class="faq-answer">
+            <p>All saved ETH are locked for 1 year from the deposit opening date. You can only claim your savings after the unlock time.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">4. Can I add multiple deposits?</button>
+          <div class="faq-answer">
+            <p>Yes. You can deposit multiple times before the lock period ends. Each deposit is tracked, and all follow the same unlock time.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">5. When can I withdraw my savings?</button>
+          <div class="faq-answer">
+            <p>Once the unlock time is reached, the “Claim” button becomes active in your dashboard. You can then withdraw your full savings.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">6. What happens if I forget I saved ETH in Savelock?</button>
+          <div class="faq-answer">
+            <p>Nothing happens. Your ETH will remain in the contract. Since Savelock has no admin functions, no one can withdraw your ETH except your wallet. Even if it takes you 30 years to remember, you’ll still be able to claim it</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">7. What if the Savelock contract is hacked?</button>
+          <div class="faq-answer">
+            <p>Savelock is a non-custodial, decentralized smart contract with no admin or emergency functions. The contract cannot be altered, terminated, or penetrated. Your funds are protected by code, not people.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">8.  What if the Savelock user interface is hacked?</button>
+          <div class="faq-answer">
+            <p>Even if the Savelock UI is compromised, your funds are safe. A hacker cannot access or withdraw funds from the contract. Once the issue is fixed, you can continue using Savelock without losing any funds.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">9. How Can I lose my saved ETH in Savelock?</button>
+          <div class="faq-answer">
+            <p>The only way to lose your savings is if your wallet is hacked and someone gains access to it after Savelock contract unlocks. Savelock does not control your funds, so protecting your wallet is your responsibility and biggest security to your savings.</p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">10.  If my wallet is hacked, can the Savelock team help me recover funds?</button>
+          <div class="faq-answer">
+            <p>Unfortunately, No. Savelock is non-custodial. Only the wallet that made the deposit can claim the funds after unlock. If someone else controls your wallet, they control your funds.</p>
+          </div>
+        </div>
+
+        <!-- Add more questions as needed... -->
       </section>
-    </div>
+</div>
+
+
 
     <!-- Dashboard -->
     <div id="dashboard" class="container" style="display:none;">
@@ -84,17 +147,6 @@
           <h3 id="depositTitle">Deposit your savings</h3>
           <form id="depositForm">
             <input type="number" id="depositAmount" placeholder="Ether deposit amount" step="0.00000001" required />
-
-            <!-- 💡 New Purpose Dropdown -->
-            <select id="savingsPurpose" required>
-              <option value="">What are you saving for?</option>
-              <option value="Trading Capital">Trading Capital</option>
-              <option value="Investment Capital">Investment Capital</option>
-              <option value="Emergency Fund">Emergency Fund</option>
-              <option value="Education">Education</option>
-              <option value="Vacation">Vacation</option>
-            </select>
-
             <button type="submit" id="depositBtn">Deposit</button>
           </form>
 
@@ -108,20 +160,11 @@
         </div>
       </div>
 
-      <!-- 🧮 Countdown Timer -->
       <div id="countdown">
         Unlocks in: <span id="timer">Loading...</span>
         <p>After the countdown, your savings will be unlocked for claiming</p>
       </div>
 
-      <!-- 📊 Savings Purpose Progress Bar -->
-      <div id="purposeProgressWrapper" style="margin: 2rem auto; max-width: 400px; text-align: center;">
-        <h3 id="purposeProgressTitle">Savings Progress</h3>
-        <progress id="purposeProgressBar" value="0" max="100" style="width: 100%; height: 24px;"></progress>
-        <p style="margin-top: 0.5rem;"><span id="currentSaved">0</span> / <span id="targetAmount">0</span> ETH saved</p>
-      </div>
-
-      <!-- 🧾 Deposit History -->
       <h3>Deposit History</h3>
       <div class="history-section"></div>
       <table id="historyTable">
@@ -137,10 +180,15 @@
     </div>
   </div>
 
+
   <footer>
     <div><p>© Savelock 2025 | All rights reserved | Built by <a href="https://x.com/nelson_xbt" target="_blank">NelsonXBT</a></p></div>
   </footer>
 
-  <div id="statusMessage"></div>
+
+
+<div id="statusMessage"></div>
+
+
 </body>
 </html>
