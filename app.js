@@ -1,4 +1,3 @@
-
 /* === Frequently Asked Questions === */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -11,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
-
 
 
 
@@ -86,6 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const connectBtn = document.getElementById("connectBtn");
   const homepageWrapper = document.getElementById("homepageWrapper");
+  const targetSavingsPage = document.getElementById("targetSavingsPage");
   const dashboard = document.getElementById("dashboard");
   const depositForm = document.getElementById("depositForm");
   const depositAmount = document.getElementById("depositAmount");
@@ -155,12 +154,8 @@ document.addEventListener("DOMContentLoaded", () => {
       contract = new ethers.Contract(contractAddress, abi, signer);
 
       homepageWrapper.style.display = "none";
-      dashboard.style.display = "block";
+      targetSavingsPage.style.display = "block";
 
-      const rawUnlockTime = await contract.getUnlockTime();
-      unlockTimestamp = Number(rawUnlockTime);
-      startCountdown();
-      await loadUserData();
     } catch (err) {
       console.error("❌ Wallet connection failed:", err);
       alert("Wallet connection failed: " + (err.message || "Unknown error"));
