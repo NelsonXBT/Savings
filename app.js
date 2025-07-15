@@ -85,6 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const connectBtn = document.getElementById("connectBtn");
   const homepageWrapper = document.getElementById("homepageWrapper");
   const targetSavingsPage = document.getElementById("targetSavingsPage");
+  const targetFormPage = document.getElementById("targetFormPage");
   const dashboard = document.getElementById("dashboard");
   const depositForm = document.getElementById("depositForm");
   const depositAmount = document.getElementById("depositAmount");
@@ -98,6 +99,58 @@ document.addEventListener("DOMContentLoaded", () => {
   const startDateEl = document.getElementById('startDate');
   const totalUsersEl = document.getElementById('totalUsers');
   const vaultBalanceEl = document.getElementById('vaultBalance');
+  const savingsProgressSection = document.getElementById('savingsProgressSection');
+  const progressTitle = document.getElementById('progressTitle');
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+  const savingsReminder = document.getElementById('savingsReminder');
+
+  // === Start Saving Buttons (Target Selection) ===
+  document.querySelectorAll('.startSavingBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const selectedPurpose = btn.dataset.purpose;
+      localStorage.setItem("savelock-purpose", selectedPurpose);
+      document.getElementById("selectedPurposeHeading").textContent = `Set Your ${selectedPurpose} Plan`;
+      targetSavingsPage.style.display = "none";
+      targetFormPage.style.display = "block";
+    });
+  });
+
+  // === Handle Target Savings Form ===
+  document.getElementById("targetForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const targetAmount = document.getElementById("targetAmount").value;
+    const frequency = document.getElementById("savingFrequency").value;
+
+    if (!targetAmount || !frequency) {
+      alert("Please fill in all fields");
+      return;
+    }
+
+    localStorage.setItem("savelock-targetAmount", targetAmount);
+    localStorage.setItem("savelock-frequency", frequency);
+
+    targetFormPage.style.display = "none";
+    dashboard.style.display = "block";
+
+    updateDashboardFromStorage();
+  });
+
+  function updateDashboardFromStorage() {
+    const purpose = localStorage.getItem("savelock-purpose") || "Savings";
+    const targetAmount = parseFloat(localStorage.getItem("savelock-targetAmount")) || 0;
+    const frequency = localStorage.getItem("savelock-frequency") || "monthly";
+
+    // Update title
+    progressTitle.textContent = `Your ${purpose} Savings Progress`;
+
+    // Show reminder
+    const lastSaved = localStorage.getItem("savelock-lastSaved");
+    let reminder = `You haven’t saved ${frequency === "daily" ? "today" : frequency === "weekly" ? "this week" : "this month"}.`;
+    savingsReminder.textContent = reminder;
+
+    savingsProgressSection.style.display = "block";
+  }
 
   function showStatus(message, duration = 5000) {
     const statusDiv = document.getElementById("statusMessage");
@@ -159,130 +212,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       console.error("❌ Wallet connection failed:", err);
       alert("Wallet connection failed: " + (err.message || "Unknown error"));
-    }
-  });
-
-  function startCountdown() {
-    if (!unlockTimestamp) {
-      timerEl.textContent = "Invalid unlock time.";
-      return;
-    }
-
-    const interval = setInterval(() => {
-      const now = Date.now();
-      const diff = unlockTimestamp * 1000 - now;
-
-      if (diff <= 0) {
-        timerEl.textContent = "Unlocked!";
-        clearInterval(interval);
-        depositForm.style.display = "none";
-        depositHeading.textContent = "Savelock Period has Ended";
-        afterUnlockText.style.display = "block";
-        inlineClaimWrapper.style.display = "block";
-      } else {
-        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
-        const m = Math.floor((diff / (1000 * 60)) % 60);
-        const s = Math.floor((diff / 1000) % 60);
-        timerEl.textContent = `${d}d ${h}h ${m}m ${s}s`;
-      }
-    }, 1000);
-  }
-
-  async function loadUserData() {
-    try {
-      const deposits = await contract.getDeposits(userAddress);
-      const total = await contract.getTotalDeposited(userAddress);
-      totalDepositedEl.textContent = `${ethers.utils.formatEther(total)} ETH`;
-
-      historyTableBody.innerHTML = '';
-      deposits.forEach((d, i) => {
-        const isUnlocked = Date.now() / 1000 >= unlockTimestamp;
-        const status = d.claimed ? '✅ Claimed' : (isUnlocked ? '🔓 Claimable' : '🔒 Locked');
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${ethers.utils.formatEther(d.amount)} ETH</td>
-          <td>${new Date(Number(d.timestamp) * 1000).toLocaleString()}</td>
-          <td>${status}</td>`;
-        historyTableBody.appendChild(row);
-      });
-    } catch (err) {
-      console.error("❌ Error loading deposits:", err);
-    }
-
-    try {
-      const contractStartTime = await contract.getStartTime();
-      startDateEl.textContent = new Date(Number(contractStartTime) * 1000).toLocaleString();
-    } catch {
-      startDateEl.textContent = "N/A";
-    }
-
-    try {
-      const totalUsers = await contract.getUserCount();
-      totalUsersEl.textContent = totalUsers.toString();
-    } catch {
-      totalUsersEl.textContent = "N/A";
-    }
-
-    try {
-      const vaultBal = await provider.getBalance(contractAddress);
-      vaultBalanceEl.textContent = `${ethers.utils.formatEther(vaultBal)} ETH`;
-    } catch {
-      vaultBalanceEl.textContent = "N/A";
-    }
-  }
-
-  depositForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    if (Date.now() >= unlockTimestamp * 1000) {
-      alert("Savelock period has ended.");
-      return;
-    }
-
-    const amount = parseFloat(depositAmount.value);
-    if (isNaN(amount) || amount <= 0) {
-      alert("Please enter a valid amount greater than 0.");
-      return;
-    }
-
-    try {
-      showStatus("Depositing...");
-      const tx = await contract.deposit({ value: ethers.utils.parseEther(amount.toString()) });
-      await tx.wait();
-      showStatus("Deposit successful", 3000);
-      depositAmount.value = '';
-      await loadUserData();
-    } catch (err) {
-      console.error("❌ Deposit failed:", err);
-      showStatus("Deposit failed", 3000);
-    }
-  });
-
-  inlineClaimBtn.addEventListener("click", async () => {
-    try {
-      const deposits = await contract.getDeposits(userAddress);
-      let claimedAny = false;
-
-      for (let i = 0; i < deposits.length; i++) {
-        if (!deposits[i].claimed) {
-          showStatus(`Claiming deposit ${i + 1}...`);
-          const tx = await contract.claim(i);
-          await tx.wait();
-          claimedAny = true;
-        }
-      }
-
-      if (claimedAny) {
-        showStatus("All eligible deposits claimed", 3000);
-      } else {
-        showStatus("No unclaimed deposits", 3000);
-      }
-
-      await loadUserData();
-    } catch (err) {
-      console.error("❌ Claim failed:", err);
-      showStatus("Claim failed", 3000);
     }
   });
 });
