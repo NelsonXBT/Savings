@@ -63,47 +63,67 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => statusDiv.classList.remove("show"), duration);
   }
 
-  function resetPlan() {
-    localStorage.removeItem("savelockPurpose");
-    localStorage.removeItem("savelockTargetAmount");
-    localStorage.removeItem("savelockFrequency");
-    location.reload();
+  async function handlePageFlow() {
+    const savedPurpose = localStorage.getItem("savelockPurpose");
+    const savedAmount = localStorage.getItem("savelockTargetAmount");
+    const savedFreq = localStorage.getItem("savelockFrequency");
+
+    if (savedPurpose && savedAmount && savedFreq) {
+      homepageWrapper.style.display = "none";
+      targetSavingsPage.style.display = "none";
+      targetFormPage.style.display = "none";
+      dashboard.style.display = "block";
+      updateProgressBar();
+      await loadUserData();
+    } else {
+      homepageWrapper.style.display = "none";
+      targetSavingsPage.style.display = "block";
+    }
   }
 
-  function showReminder() {
-    const freq = localStorage.getItem("savelockFrequency");
-    if (!freq) return;
+  connectBtn.addEventListener("click", async () => {
+    try {
+      if (!window.ethereum) return alert("Please use a browser with an Ethereum wallet like MetaMask.");
+      provider = new ethers.providers.Web3Provider(window.ethereum);
 
-    let reminder = "You haven’t saved for this period.";
-    if (freq === "daily") reminder = "⏰ You haven’t saved today.";
-    if (freq === "weekly") reminder = "📅 You haven’t saved this week.";
-    if (freq === "monthly") reminder = "📆 You haven’t saved this month.";
+      const { chainId: currentChainId } = await provider.getNetwork();
+      if (currentChainId !== chainId) {
+        try {
+          await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x" + chainId.toString(16) }] });
+        } catch (err) {
+          if (err.code === 4902) {
+            await window.ethereum.request({
+              method: "wallet_addEthereumChain",
+              params: [{
+                chainId: "0x" + chainId.toString(16),
+                chainName: "Arbitrum Sepolia",
+                rpcUrls: [rpcUrl],
+                nativeCurrency: { name: "Ethereum", symbol: "ETH", decimals: 18 },
+                blockExplorerUrls: ["https://sepolia.arbiscan.io"]
+              }]
+            });
+          } else {
+            alert("Please switch to the Arbitrum Sepolia network.");
+            return;
+          }
+        }
+      }
 
-    savingsReminderEl.textContent = reminder;
-    savingsReminderEl.style.display = "block";
-  }
+      await provider.send("eth_requestAccounts", []);
+      signer = provider.getSigner();
+      userAddress = await signer.getAddress();
+      contract = new ethers.Contract(contractAddress, abi, signer);
 
-  function updateProgressBar(currentSaved = 0) {
-    const target = parseFloat(localStorage.getItem("savelockTargetAmount")) || 0;
-    const purpose = localStorage.getItem("savelockPurpose") || "Savings";
-    if (!target || !purpose) return;
-    const percentage = ((currentSaved / target) * 100).toFixed(1);
-    progressTitleEl.textContent = `${purpose} Savings Progress`;
-    progressTextEl.textContent = `${percentage}% of your goal saved`;
-    progressFillEl.style.width = `${percentage}%`;
-    savingsProgressSection.style.display = "block";
-    showReminder();
-  }
+      const rawUnlockTime = await contract.getUnlockTime();
+      unlockTimestamp = Number(rawUnlockTime);
+      startCountdown();
 
-  // Add Reset button to dashboard UI
-  const resetBtn = document.createElement("button");
-  resetBtn.textContent = "Reset Plan";
-  resetBtn.style.marginTop = "1rem";
-  resetBtn.onclick = resetPlan;
-  dashboard.appendChild(resetBtn);
+      await handlePageFlow();
+    } catch (err) {
+      console.error("❌ Wallet connection failed:", err);
+      alert("Wallet connection failed: " + (err.message || "Unknown error"));
+    }
+  });
 
-  // (Multiple saving goals support would require deeper structural UI changes)
-  // For now, support one goal at a time with the ability to reset and restart
-
-  // ...rest of app logic remains unchanged
+  // Rest of logic remains untouched...
 });
