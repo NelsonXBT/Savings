@@ -108,6 +108,33 @@
         </div>
       </div>
     </section>
+    
+    <!-- TARGET SAVINGS FORM -->
+<section id="targetFormPage" style="display: none;">
+  <div class="container">
+    <h2 id="selectedPurposeHeading">Set Your Savings Plan</h2>
+    <p>Fill in your savings target and frequency to get started.</p>
+
+    <form id="targetForm" class="target-form">
+      <label for="targetAmount">1. What is your total savings target?</label>
+      <input type="number" id="targetAmount" placeholder="e.g. 500" required />
+
+      <label for="savingFrequency">2. How would you prefer to save?</label>
+      <select id="savingFrequency" required>
+        <option value="">-- Select Frequency --</option>
+        <option value="daily">Daily</option>
+        <option value="weekly">Weekly</option>
+        <option value="monthly">Monthly</option>
+      </select>
+
+      <button type="submit">Start Saving</button>
+    </form>
+  </div>
+</section>
+
+
+
+
 
     <!-- Dashboard -->
     <div id="dashboard" class="container" style="display:none;">

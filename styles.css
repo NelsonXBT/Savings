@@ -267,6 +267,39 @@ input[type="number"]::placeholder {
   font-style: italic;
 }
 
+/* === Target Form Page === */
+.target-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 2rem auto;
+  width: 100%;
+  max-width: 400px;
+  padding: 0 1rem;
+}
+.target-form label {
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #d4a055;
+}
+.target-form input,
+.target-form select {
+  padding: 14px;
+  border-radius: 12px;
+  border: 2px solid #d4a055;
+  background-color: #0d0d0d;
+  color: white;
+  font-size: 1rem;
+}
+.target-form select {
+  font-size: 1rem;
+}
+
+
+
+
+
 /* ===================
    Media Queries
    =================== */
